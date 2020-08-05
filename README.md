@@ -26,3 +26,9 @@
 3. 스피드
 4. 청크
 5. 음 높낮이(인토네이션)
+
+
+### 진행상황
+1. [스터디 자료](https://www.notion.so/Table-of-Contents-797601be645c4b64a2d93250d3f06859)
+
+2. [회의록](https://www.notion.so/7ab5ba9195b348198187a33fad177c90?v=08758f6264e747848caf17efe8cdf1e4)
