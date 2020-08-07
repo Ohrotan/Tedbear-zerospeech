@@ -53,18 +53,18 @@ def process_wav(wav_path, out_path, sr=160000, preemph=0.97, n_fft=2048, n_mels=
 
 @hydra.main(config_path="config/preprocessing.yaml")
 def preprocess_dataset(cfg):
-    in_dir = Path(utils.to_absolute_path(cfg.in_dir))
-    out_dir = Path(utils.to_absolute_path("datasets")) / str(cfg.dataset.dataset)
+    in_dir = Path(utils.to_absolute_path(cfg.in_dir)) # wav 파일 읽어올 디렉토리
+    out_dir = Path(utils.to_absolute_path("datasets")) / str(cfg.dataset.dataset)  # 앞에 datasets가 붙어있으므로 경로는 datasets/{인자로 받은 값}이 됨
     out_dir.mkdir(parents=True, exist_ok=True)
 
     executor = ProcessPoolExecutor(max_workers=cpu_count())
-    for split in ["train", "test"]:
+    for split in ["train", "test"]: # "train"과 "test"를 차례로 반복
         print("Extracting features for {} set".format(split))
         futures = []
-        split_path = out_dir / cfg.dataset.language / split
-        with open(split_path.with_suffix(".json")) as file:
+        split_path = out_dir / cfg.dataset.language / split # 위에서 정해진 out_dir 하위에 train과 test가 차례로 split_path가 됨, cfg.dataset.language는 잘 모르겠음
+        with open(split_path.with_suffix(".json")) as file: # train.json, test.json 차례로 불러오게됨
             metadata = json.load(file)
-            for in_path, start, duration, out_path in metadata:
+            for in_path, start, duration, out_path in metadata: # json 파일 열어보면 순서대로 in_path, start, duration, out_path 정보를 주고 있음, 그러니 우리가 커스터마이징할 때 이 json 파일도 변경해야함
                 wav_path = in_dir / in_path
                 out_path = out_dir / out_path
                 out_path.parent.mkdir(parents=True, exist_ok=True)
