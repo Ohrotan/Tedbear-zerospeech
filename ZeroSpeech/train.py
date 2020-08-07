@@ -30,11 +30,11 @@ def save_checkpoint(encoder, decoder, optimizer, amp, scheduler, step, checkpoin
 
 
 @hydra.main(config_path="config/train.yaml")
-def train_model(cfg):
+def train_model(cfg): # 위의 confg_path의 파일의 모든 값이 함수의 인자로 들어오는 것
     tensorboard_path = Path(utils.to_absolute_path("tensorboard")) / cfg.checkpoint_dir
     checkpoint_dir = Path(utils.to_absolute_path(cfg.checkpoint_dir))
     writer = SummaryWriter(tensorboard_path)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # cuda 사용이 가능하지 않으면 cpu 사용
 
     encoder = Encoder(**cfg.model.encoder)
     decoder = Decoder(**cfg.model.decoder)
