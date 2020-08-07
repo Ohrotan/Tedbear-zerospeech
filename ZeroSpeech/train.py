@@ -49,7 +49,7 @@ def train_model(cfg): # 위의 confg_path의 파일의 모든 값이 함수의 �
         optimizer, milestones=cfg.training.scheduler.milestones,
         gamma=cfg.training.scheduler.gamma)
 
-    if cfg.resume:
+    if cfg.resume: # training을 중간에 멈췄을 경우 이 값을 True로 변경하면 checkpoint에서 기록을 가져와서 다시 시작. 처음 training하는 경우에는 False로 값이 설정되어 있음
         print("Resume checkpoint from: {}:".format(cfg.resume))
         resume_path = utils.to_absolute_path(cfg.resume)
         checkpoint = torch.load(resume_path, map_location=lambda storage, loc: storage)
@@ -62,13 +62,15 @@ def train_model(cfg): # 위의 confg_path의 파일의 모든 값이 함수의 �
     else:
         global_step = 0
 
-    root_path = Path(utils.to_absolute_path("datasets")) / cfg.dataset.path
+    root_path = Path(utils.to_absolute_path("datasets")) / cfg.dataset.path # config/train.yaml에서 dataset: 2019/english 로 되어있으므로 config/dataset/2019/english.yaml 에서 path 참조
     dataset = SpeechDataset(
         root=root_path,
+	# preprocessing: default 라고 되어있으므로 config/preprocessing/default.yaml에서 hop_length, sr, smaple_frames 참조
         hop_length=cfg.preprocessing.hop_length,
         sr=cfg.preprocessing.sr,
         sample_frames=cfg.training.sample_frames)
 
+# training: default 라고 되어있으므로 config/training/default.yaml에서 batch_size,n_workers,n_steps 참조
     dataloader = DataLoader(
         dataset,
         batch_size=cfg.training.batch_size,
@@ -106,6 +108,7 @@ def train_model(cfg): # 위의 confg_path의 파일의 모든 값이 함수의 �
 
             global_step += 1
 
+# cfg.training.checkpoint_interval 에서 지정한 횟수마다 주기적으로 트레이닝 중간 과정 checkpoints에 기록하여서 갑자기 중단되더라도 복구할 수 있게 백업본 만들기
             if global_step % cfg.training.checkpoint_interval == 0:
                 save_checkpoint(
                     encoder, decoder, optimizer, amp,
