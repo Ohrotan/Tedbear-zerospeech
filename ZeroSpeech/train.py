@@ -14,7 +14,7 @@ from torch.utils.tensorboard import SummaryWriter
 from dataset import SpeechDataset
 from model import Encoder, Decoder
 
-
+# training 중간과정을 기록함, 중단되어도 다시 그 지점부터 시작할 수 있도록
 def save_checkpoint(encoder, decoder, optimizer, amp, scheduler, step, checkpoint_dir):
     checkpoint_state = {
         "encoder": encoder.state_dict(),
@@ -24,32 +24,43 @@ def save_checkpoint(encoder, decoder, optimizer, amp, scheduler, step, checkpoin
         "scheduler": scheduler.state_dict(),
         "step": step}
     checkpoint_dir.mkdir(exist_ok=True, parents=True)
+# 이 중간과정을 저장할 폴더 경로와 파일명
     checkpoint_path = checkpoint_dir / "model.ckpt-{}.pt".format(step)
+# 객체를 파일로 저장하는 함수
     torch.save(checkpoint_state, checkpoint_path)
     print("Saved checkpoint: {}".format(checkpoint_path.stem))
 
 
 @hydra.main(config_path="config/train.yaml")
-def train_model(cfg): # 위의 confg_path의 파일의 모든 값이 함수의 인자로 들어오는 것
+def train_model(cfg): # 위의 confg_path의 파일의 모든 값이 cfg로 함수의 인자로 들어오는 것
     tensorboard_path = Path(utils.to_absolute_path("tensorboard")) / cfg.checkpoint_dir
-    checkpoint_dir = Path(utils.to_absolute_path(cfg.checkpoint_dir))
+    checkpoint_dir = Path(utils.to_absolute_path(cfg.checkpoint_dir)) # chekpoint dir 지정
     writer = SummaryWriter(tensorboard_path)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # cuda 사용이 가능하지 않으면 cpu 사용
 
-    encoder = Encoder(**cfg.model.encoder)
+# 객체 생성시 초기값을 config/model/default.yaml 에서 가져옴
+    encoder = Encoder(**cfg.model.encoder) 
     decoder = Decoder(**cfg.model.decoder)
     encoder.to(device)
     decoder.to(device)
 
+# 최적화할 때 Adam이라는 알고리즘을 사용
+# torch.optim.Adam(params, lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
+# ref: https://pytorch.org/docs/stable/optim.html#torch.optim.Adam
     optimizer = optim.Adam(
         chain(encoder.parameters(), decoder.parameters()),
         lr=cfg.training.optimizer.lr)
+
+#amp는 tensor core의 트레이닝을 가속화시켜주는 도구
     [encoder, decoder], optimizer = amp.initialize([encoder, decoder], optimizer, opt_level="O1")
-    scheduler = optim.lr_scheduler.MultiStepLR(
+# 학습률을 최적화하는 스케줄러
+scheduler = optim.lr_scheduler.MultiStepLR(
         optimizer, milestones=cfg.training.scheduler.milestones,
         gamma=cfg.training.scheduler.gamma)
 
-    if cfg.resume: # training을 중간에 멈췄을 경우 이 값을 True로 변경하면 checkpoint에서 기록을 가져와서 다시 시작. 처음 training하는 경우에는 False로 값이 설정되어 있음
+
+ # training을 중간에 멈췄을 경우 이 값을 True로 변경하면 checkpoint에서 기록을 가져와서 다시 시작. 처음 training하는 경우에는 False로 값이 설정되어 있음
+    if cfg.resume:
         print("Resume checkpoint from: {}:".format(cfg.resume))
         resume_path = utils.to_absolute_path(cfg.resume)
         checkpoint = torch.load(resume_path, map_location=lambda storage, loc: storage)
@@ -62,7 +73,8 @@ def train_model(cfg): # 위의 confg_path의 파일의 모든 값이 함수의 �
     else:
         global_step = 0
 
-    root_path = Path(utils.to_absolute_path("datasets")) / cfg.dataset.path # config/train.yaml에서 dataset: 2019/english 로 되어있으므로 config/dataset/2019/english.yaml 에서 path 참조
+    root_path = Path(utils.to_absolute_path("datasets")) / cfg.dataset.path 
+# config/train.yaml에서 dataset: 2019/english 로 되어있으므로 config/dataset/2019/english.yaml 에서 path 참조
     dataset = SpeechDataset(
         root=root_path,
 	# preprocessing: default 라고 되어있으므로 config/preprocessing/default.yaml에서 hop_length, sr, smaple_frames 참조
@@ -113,7 +125,7 @@ def train_model(cfg): # 위의 confg_path의 파일의 모든 값이 함수의 �
                 save_checkpoint(
                     encoder, decoder, optimizer, amp,
                     scheduler, global_step, checkpoint_dir)
-
+# training 결과 기록
         writer.add_scalar("recon_loss/train", average_recon_loss, global_step)
         writer.add_scalar("vq_loss/train", average_vq_loss, global_step)
         writer.add_scalar("average_perplexity", average_perplexity, global_step)
