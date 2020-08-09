@@ -1,18 +1,18 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.distributions import Categorical
+from torch.distributions import Categorical # 다항분포
 
-from tqdm import tqdm
+from tqdm import tqdm # for문 돌아갈떄 확인해주는 패키지임 (print로 확인하고 그런거)
 import numpy as np
-from preprocess import mulaw_decode
+from preprocess import mulaw_decode  # https://en.wikipedia.org/wiki/%CE%9C-law_algorithm 8비트 16비트 그런거 맞춰주는과정이라는데
 
 
 def get_gru_cell(gru):
     gru_cell = nn.GRUCell(gru.input_size, gru.hidden_size)
-    gru_cell.weight_hh.data = gru.weight_hh_l0.data
-    gru_cell.weight_ih.data = gru.weight_ih_l0.data
-    gru_cell.bias_hh.data = gru.bias_hh_l0.data
+    gru_cell.weight_hh.data = gru.weight_hh_l0.data           # hidden hidden  # hidden과 hidden사이
+    gru_cell.weight_ih.data = gru.weight_ih_l0.data           # input hidden  # input과 hidden사이
+    gru_cell.bias_hh.data = gru.bias_hh_l0.data               # hidden hidden
     gru_cell.bias_ih.data = gru.bias_ih_l0.data
     return gru_cell
 
@@ -21,9 +21,12 @@ class Encoder(nn.Module):
     def __init__(self, in_channels, channels, n_embeddings, embedding_dim, jitter=0):
         super(Encoder, self).__init__()
         self.encoder = nn.Sequential(
-            nn.Conv1d(in_channels, channels, 3, 1, 0, bias=False),
-            nn.BatchNorm1d(channels),
-            nn.ReLU(True),
+            nn.Conv1d(in_channels, channels, 3, 1, 0, bias=False),# 1차원 커널  인풋크기, 아웃풋크기, 커널크기=3, stride=1,padding=0
+            nn.BatchNorm1d(channels),                            #stride 1칸씩 이동 , 패딩 0으로 채워놓겠따
+            nn.ReLU(True),             #batch normalization 기존 Deep Network에서는 learning rate를 너무 높게 잡을 경우 gradient가 explode/vanish 하거나, 나쁜 local minima에 빠지는 문제가 있었다. 이는 parameter들의 scale 때문인데, Batch Normalization을 사용할 경우 propagation 할 때 parameter의 scale에 영향을 받지 않게 된다. 따라서, learning rate를 크게 잡을 수 있게 되고 이는 빠른 학습을 가능케 한다.
+            
+            
+            
             nn.Conv1d(channels, channels, 3, 1, 1, bias=False),
             nn.BatchNorm1d(channels),
             nn.ReLU(True),
@@ -38,36 +41,36 @@ class Encoder(nn.Module):
             nn.ReLU(True),
             nn.Conv1d(channels, embedding_dim, 1)
         )
-        self.codebook = VQEmbeddingEMA(n_embeddings, embedding_dim)
-        self.jitter = Jitter(jitter)
+        self.codebook = VQEmbeddingEMA(n_embeddings, embedding_dim)  # 코드북이 벡터양자화과정에서 나오는 결과물담은거같음
+        self.jitter = Jitter(jitter)   # jitter는 과적합방지 근데 여기선 0넣서 안한듯 decoder에서 0.5로 잡음
 
     def forward(self, mels):
-        z = self.encoder(mels)
-        z, loss, perplexity = self.codebook(z.transpose(1, 2))
+        z = self.encoder(mels)   # 멜스펙트로그램 걍 넣는거임
+        z, loss, perplexity = self.codebook(z.transpose(1, 2))     # 밑에부분
         z = self.jitter(z)
         return z, loss, perplexity
 
-    def encode(self, mel):
+    def encode(self, mel):          # 멜스펙트로그램 넣기
         z = self.encoder(mel)
         z, indices = self.codebook.encode(z.transpose(1, 2))
         return z, indices
 
 
-class Jitter(nn.Module):
+class Jitter(nn.Module):           # 노이즈넣어서 과적합막아주는거  # p가머지 확률같긴한데  # nn.moduler?
     def __init__(self, p):
         super().__init__()
         self.p = p
-        prob = torch.Tensor([p / 2, 1 - p, p / 2])
+        prob = torch.Tensor([p / 2, 1 - p, p / 2])   # 확률을 텐서형태로?  p=0.1 이면  0.05   0.9   0.05
         self.register_buffer("prob", prob)
 
-    def forward(self, x):
+    def forward(self, x):                        # x가 머지
         if not self.training or self.p == 0:
             return x
         else:
             batch_size, sample_size, channels = x.size()
 
-            dist = Categorical(self.prob)
-            index = dist.sample(torch.Size([batch_size, sample_size])) - 1
+            dist = Categorical(self.prob)       #0.05, 0.9, 0.95 인 다항분포
+            index = dist.sample(torch.Size([batch_size, sample_size])) - 1          # ??? 
             index[:, 0].clamp_(0, 1)
             index[:, -1].clamp_(-1, 0)
             index += torch.arange(sample_size, device=x.device)
@@ -75,17 +78,18 @@ class Jitter(nn.Module):
             x = torch.gather(x, 1, index.unsqueeze(-1).expand(-1, -1, channels))
         return x
 
-
+ # 이게 벡터 양자화 과정   
 class VQEmbeddingEMA(nn.Module):
     def __init__(self, n_embeddings, embedding_dim, commitment_cost=0.25, decay=0.999, epsilon=1e-5):
+                        # n_embedding 임베딩벡터 개수? , embedding_dim= 임베딩 백터 크기
         super(VQEmbeddingEMA, self).__init__()
         self.commitment_cost = commitment_cost
         self.decay = decay
         self.epsilon = epsilon
 
         init_bound = 1 / 512
-        embedding = torch.Tensor(n_embeddings, embedding_dim)
-        embedding.uniform_(-init_bound, init_bound)
+        embedding = torch.Tensor(n_embeddings, embedding_dim)   
+        embedding.uniform_(-init_bound, init_bound)      # -init~ init 균등분포 난수생성인듯
         self.register_buffer("embedding", embedding)
         self.register_buffer("ema_count", torch.zeros(n_embeddings))
         self.register_buffer("ema_weight", self.embedding.clone())
@@ -93,8 +97,8 @@ class VQEmbeddingEMA(nn.Module):
     def encode(self, x):
         M, D = self.embedding.size()
         x_flat = x.detach().reshape(-1, D)
-
-        distances = torch.addmm(torch.sum(self.embedding ** 2, dim=1) +
+          # addmm 은  n*m   m*p 
+        distances = torch.addmm(torch.sum(self.embedding ** 2, dim=1) +  
                                 torch.sum(x_flat ** 2, dim=1, keepdim=True),
                                 x_flat, self.embedding.t(),
                                 alpha=-2.0, beta=1.0)
