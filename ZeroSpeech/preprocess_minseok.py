@@ -39,7 +39,7 @@ def process_wav(wav_path, out_path, sr=160000, preemph=0.97, n_fft=2048, n_mels=
     
     
     wav = wav / np.abs(wav).max() * 0.999
-    # 최대값으로 나눠주는데 왜 나눈건지는 모르겠습니다. 
+    # 최대값으로 나눠 원소들간의 변동을 명확화시킨다 
 
     mel = librosa.feature.melspectrogram(preemphasis(wav, preemph), # 고주파 잡음 줄인거로 시행
                                          sr=sr,
@@ -67,8 +67,8 @@ def process_wav(wav_path, out_path, sr=160000, preemph=0.97, n_fft=2048, n_mels=
 # 기본 경로를 야믈형식으로 저장해뒀다. 이걸로 바로 해당 파일로 접근. 여기서 in_dir이 ??? 로 되어있음
 def preprocess_dataset(cfg):
     in_dir = Path(utils.to_absolute_path(cfg.dataset.in_dir)) # Path로 경로를 지정(객체로 지정).
-    #utils.to_absolute_path는 경로를 절대 경로(C:/부터 시작하는 경로)로 변경.
-    # dataset안에있는 in_dir변수를 경로로 만든다.
+    #utils.to_absolute_path는 경로를 절대 경로(프로그램이 실행되는 최상단, 여기선 zerospeech폴더부터 표현하는 것)로 변경.
+    # config/dataset/2019/english 안에있는 in_dir변수를 경로로 만든다.
     out_dir = Path(utils.to_absolute_path("datasets")) / str(cfg.dataset.dataset)
     # cfg.dataset.dataset: 2019/english을 보아 datasets/2019/english에 out_dir 지정해야하나
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -78,7 +78,7 @@ def preprocess_dataset(cfg):
     for split in ["train", "test"]: 
         print("Extracting features for {} set".format(split)) 
         futures = []
-        split_path = out_dir / cfg.dataset.language / split # 경로지정
+        split_path = out_dir / cfg.dataset.language / split # 경로지정 dataset/2019/english/train or test
         with open(split_path.with_suffix(".json")) as file:
             metadata = json.load(file)
             for in_path, start, duration, out_path in metadata: 
