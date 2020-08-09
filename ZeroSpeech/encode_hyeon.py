@@ -4,7 +4,7 @@ import hydra.utils as utils
 import json
 import numpy as np
 from pathlib import Path
-from tqdm import tqdm
+from tqdm import tqdm # loop문 상태바를 나타냄.
 
 import torch
 
@@ -13,10 +13,10 @@ from model import Encoder
 
 @hydra.main(config_path="config/encode.yaml")
 def encode_dataset(cfg):
-    out_dir = Path(utils.to_absolute_path(cfg.out_dir))
-    out_dir.mkdir(exist_ok=True, parents=True)
+    out_dir = Path(utils.to_absolute_path(cfg.out_dir)) # 사용자 정의
+    out_dir.mkdir(exist_ok=True, parents=True) # 기존 디렉토리 있어도 상관 x / 상위 경로 일부 생략 가능 
 
-    if cfg.save_auxiliary:
+    if cfg.save_auxiliary: # (default) False
         aux_path = out_dir.parent / "auxiliary_embedding1"
         aux_path.mkdir(exist_ok=True, parents=True)
 
@@ -45,9 +45,9 @@ def encode_dataset(cfg):
         encoder.encoder[-1].register_forward_hook(hook)
 
     for _, _, _, path in tqdm(metadata):
-        path = root_path.parent / path
-        mel = torch.from_numpy(np.load(path.with_suffix(".mel.npy"))).unsqueeze(0).to(device)
-        with torch.no_grad():
+        path = root_path.parent / path #'datasets'의 절대경로
+        mel = torch.from_numpy(np.load(path.with_suffix(".mel.npy"))).unsqueeze(0).to(device) #squeeze : 차원을 한 단위 축소
+        with torch.no_grad(): #텐서의 autograd 연산 기록을 남지 않게 해줌
             z, indices = encoder.encode(mel)
 
         z = z.squeeze().cpu().numpy()
