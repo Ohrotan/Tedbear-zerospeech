@@ -31,4 +31,4 @@
 ### 진행상황
 1. [스터디 자료](https://www.notion.so/Table-of-Contents-797601be645c4b64a2d93250d3f06859)
 
-2. [회의록](https://www.notion.so/7ab5ba9195b348198187a33fad177c90?v=08758f6264e747848caf17efe8cdf1e4)
+2. [회의록](https://www.notion.so/bffec461d5464284a6dcf8884f395d48?v=5622f6b8537843a2879884076f46113d)
