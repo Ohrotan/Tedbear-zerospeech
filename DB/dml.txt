@@ -1,0 +1,20 @@
+INSERT INTO user (email,name,pwd) VALUES ('aa@aa.com','조란','aa');
+
+INSERT INTO `tedbear`.`talks` (`id`, `url`, `title`, `speaker`, `about_speaker`, `published_date`, `duration`, `topics`, `description`, `level`) VALUES (NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
+INSERT INTO `tedbear`.`related_talks` (`id`, `related_id`, `related_title`) VALUES (NULL, NULL, NULL);
+
+INSERT INTO `tedbear`.`watching_record` (`id`, `user_id`, `talks_id`, `talks_title`, `last_time`) VALUES (NULL, NULL, NULL, NULL, NULL);
+
+INSERT INTO `tedbear`.`shadowing_record` (`id`, `user_id`, `talks_id`, `sentence_id`, `accenet_score`, `strength_score`, `speed_score`, `pronunciation_score`, `tot_score`) VALUES (NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
+INSERT INTO `tedbear`.`sentence` (`id`, `talks_id`, `start_time`, `end_time`, `duration`, `sentence`) VALUES (NULL, NULL, NULL, NULL, NULL, NULL);
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,73 @@
+CREATE USER 'tedbear'@'localhost' IDENTIFIED WITH mysql_native_password BY '';
+CREATE DATABASE tedbear;
+GRANT ALL PRIVILEGES ON tedbear.* TO 'tedbear'@'localhost';
+
+------------------------------------------
+
+
+USE tedbear;
+CREATE TABLE IF NOT EXISTS `user` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(45) NOT NULL,
+  `name` varchar(45) NOT NULL,
+  `pwd` varchar(45) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email_UNIQUE` (`email`),
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  KEY `id` (`id`) /*!80000 INVISIBLE */
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+CREATE TABLE IF NOT EXISTS `tedbear`.`talks` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `url` VARCHAR(45) NOT NULL,
+  `title` VARCHAR(45) NULL,
+  `speaker` VARCHAR(45) NULL,
+  `about_speaker` VARCHAR(256) NULL,
+  `published_date` DATE NULL,
+  `duration` INT NULL,
+  `topics` VARCHAR(45) NULL,
+  `description` TEXT NULL,
+  `level` INT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE)
+ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS `tedbear`.`related_talks` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `related_id` INT NOT NULL,
+  `related_title` VARCHAR(45) NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS `tedbear`.`watching_record` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NULL,
+  `talks_id` INT NULL,
+  `talks_title` VARCHAR(45) NULL,
+  `last_time` DATETIME NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS `tedbear`.`shadowing_record` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NULL,
+  `talks_id` INT NULL,
+  `sentence_id` INT NULL,
+  `accenet_score` INT NULL,
+  `strength_score` INT NULL,
+  `speed_score` INT NULL,
+  `pronunciation_score` INT NULL,
+  `tot_score` INT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS `tedbear`.`sentence` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `talks_id` INT NULL,
+  `start_time` TIME NULL,
+  `end_time` TIME NULL,
+  `duration` TIME NULL,
+  `sentence` VARCHAR(45) NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
