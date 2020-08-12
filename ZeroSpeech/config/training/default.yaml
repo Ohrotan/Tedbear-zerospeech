@@ -1,5 +1,5 @@
 training:
-    batch_size: 52
+    batch_size: 5
     sample_frames: 32
     n_steps: 500000
     optimizer:
@@ -9,5 +9,5 @@ training:
             - 300000
             - 400000
         gamma: 0.5
-    checkpoint_interval: 20000
+    checkpoint_interval: 1000
     n_workers: 8
