@@ -54,7 +54,7 @@ def train_model(cfg): # 위의 confg_path의 파일의 모든 값이 cfg로 함�
 #amp는 tensor core의 트레이닝을 가속화시켜주는 도구
     [encoder, decoder], optimizer = amp.initialize([encoder, decoder], optimizer, opt_level="O1")
 # 학습률을 최적화하는 스케줄러
-scheduler = optim.lr_scheduler.MultiStepLR(
+    scheduler = optim.lr_scheduler.MultiStepLR(
         optimizer, milestones=cfg.training.scheduler.milestones,
         gamma=cfg.training.scheduler.gamma)
 
