@@ -65,6 +65,7 @@ def process_wav(wav_path, out_path, sr=160000, preemph=0.97, n_fft=2048, n_mels=
 
 @hydra.main(config_path="config/preprocessing.yaml") 
 # 기본 경로를 야믈형식으로 저장해뒀다. 이걸로 바로 해당 파일로 접근. 여기서 in_dir이 ??? 로 되어있음
+ # 위의 confg_path의 파일의 모든 값이 함수의 인자로 들어오는 것
 def preprocess_dataset(cfg):
     in_dir = Path(utils.to_absolute_path(cfg.dataset.in_dir)) # Path로 경로를 지정(객체로 지정).
     #utils.to_absolute_path는 경로를 절대 경로(프로그램이 실행되는 최상단, 여기선 zerospeech폴더부터 표현하는 것)로 변경.
