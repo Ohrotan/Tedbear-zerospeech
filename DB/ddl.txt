@@ -20,14 +20,14 @@ CREATE TABLE IF NOT EXISTS `user` (
 
 CREATE TABLE IF NOT EXISTS `tedbear`.`talks` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `url` VARCHAR(45) NOT NULL,
-  `title` VARCHAR(45) NULL,
-  `speaker` VARCHAR(45) NULL,
-  `about_speaker` VARCHAR(256) NULL,
+  `url` VARCHAR(1024) NOT NULL,
+  `title` VARCHAR(1024) NULL,
+  `speaker` VARCHAR(1024) NULL,
   `published_date` DATE NULL,
   `duration` INT NULL,
-  `topics` VARCHAR(45) NULL,
+  `topics` VARCHAR(1024) NULL,
   `description` TEXT NULL,
+  `image` TEXT NOT NULL,
   `level` INT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE)
@@ -35,10 +35,14 @@ ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE IF NOT EXISTS `tedbear`.`related_talks` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `related_id` INT NOT NULL,
-  `related_title` VARCHAR(45) NULL,
+  `talks_id` INT NOT  NULL,
+  `related_id` INT NOT  NULL,
+  `related_title` TEXT(100000) NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
 
 CREATE TABLE IF NOT EXISTS `tedbear`.`watching_record` (
   `id` INT NOT NULL AUTO_INCREMENT,
