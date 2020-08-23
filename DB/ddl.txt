@@ -69,9 +69,9 @@ ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 CREATE TABLE IF NOT EXISTS `tedbear`.`sentence` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `talks_id` INT NULL,
-  `start_time` TIME NULL,
-  `end_time` TIME NULL,
-  `duration` TIME NULL,
-  `sentence` VARCHAR(45) NULL,
+  `start_time` float NULL,
+  `end_time` float NULL,
+  `duration` float NULL,
+  `sentence` text NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
