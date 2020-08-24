@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS `user` (
 CREATE TABLE IF NOT EXISTS `tedbear`.`talks` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `url` VARCHAR(1024) NOT NULL,
-  `youtube_url` VARCHAR(1024) NULL,
+  `youtube_url` text NULL,
   `title` VARCHAR(1024) NULL,
   `speaker` VARCHAR(1024) NULL,
   `published_date` DATE NULL,
