@@ -7,13 +7,13 @@ import mysql.connector
 from ast import literal_eval
 
 def insert_user(val,port=3306,pwd=1234): 
-'''
-val에는     val = [(11,'fkfk@dassk.com','YangCHOI', 'ulsan'),(52,'lkdds@daksad.com','BAEK', 'busan')] 와 같이 
-[(아이디,email,name,pwd),(아이디,email,name,pwd)] 형식의 리스트가 와야함
-port의 default는 3306, 즉 로컬
-pwd에는 본인의 MySql 비밀번호. default는 1234
-'''
-    # mysql workbench에서 지정한 db 정보
+
+#val에는     val = [(11,'fkfk@dassk.com','YangCHOI', 'ulsan'),(52,'lkdds@daksad.com','BAEK', 'busan')] 와 같이 
+#[(아이디,email,name,pwd),(아이디,email,name,pwd)] 형식의 리스트가 와야함
+#port의 default는 3306, 즉 로컬
+#pwd에는 본인의 MySql 비밀번호. default는 1234
+
+# mysql workbench에서 지정한 db 정보
     mydb = mysql.connector.connect(
         host = "localhost",
         user = "root",
@@ -68,12 +68,11 @@ def init_talks(port=3306, pwd=1234):# talks 테이블을 초기 상태로 만드
     
 
 def insert_talks(val,port=3306,pwd=1234): # talks에 insert하는 함수. NULL값도 인자로 넣어야함
-'''
-val에는     val = [(id,url,yt_url,title,speaker,published_date,duration,topics,description,level,image),(id,url,yt_url,title,speaker,published_date,duration,topics,description,level,image)] 형식의 리스트가 와야함
-primary key인 id도 주는 이유는 id가 ted에서 제공하는 id이기때문..즉 함부로 autoincrement하면 안됨...
-port의 default는 3306, 즉 로컬
-pwd에는 본인의 MySql 비밀번호. default는 1234
-'''
+
+#val에는     val = [(id,url,yt_url,title,speaker,published_date,duration,topics,description,level,image),(id,url,yt_url,title,speaker,published_date,duration,topics,description,level,image)] 형식의 리스트가 와야함
+#primary key인 id도 주는 이유는 id가 ted에서 제공하는 id이기때문..즉 함부로 autoincrement하면 안됨...
+#port의 default는 3306, 즉 로컬
+#pwd에는 본인의 MySql 비밀번호. default는 1234
     # mysql workbench에서 지정한 db 정보
     mydb = mysql.connector.connect(
         host = "localhost",
@@ -135,11 +134,11 @@ def init_related_talks(port=3306,pwd=1234): # related_talks를 초기 상태로 
 
 
 def insert_related_talks(val,port=3306,pwd=1234): # related_talks에 insert하는 함수. NULL값도 인자로 넣어야함
-'''
-val에는 val = [(talks_id,related_id,related_title),(talks_id,related_id,related_title)] 형식의 리스트가 와야함
-port의 default는 3306, 즉 로컬
-pwd에는 본인의 MySql 비밀번호. default는 1234
-'''
+
+#val에는 val = [(talks_id,related_id,related_title),(talks_id,related_id,related_title)] 형식의 리스트가 와야함
+#port의 default는 3306, 즉 로컬
+#pwd에는 본인의 MySql 비밀번호. default는 1234
+
     # mysql workbench에서 지정한 db 정보
     mydb = mysql.connector.connect(
         host = "localhost",
@@ -158,12 +157,12 @@ pwd에는 본인의 MySql 비밀번호. default는 1234
 
 
 def init_sentence(port=3306,pwd=1234): # sentence table을 초기화 하는 함수입니다.
-    data = pd.read_csv('../ted_scrap/data/final.csv')
+    data = pd.read_csv('../ted_scrap/data/sentence_chunk_split.csv')
     data = data.where(pd.notnull(data), None)
 
     data.rename(columns = {"start": "start_time",
 
-     "end": "end_time","sentence":"sentence_en"}, inplace = True)
+     "end": "end_time"}, inplace = True)
 
     mydb = mysql.connector.connect(
         host = "localhost",
@@ -191,11 +190,11 @@ def init_sentence(port=3306,pwd=1234): # sentence table을 초기화 하는 함�
 
 
 def insert_sentence(val,port=3306,pwd=1234): # related_talks에 insert하는 함수. NULL값도 인자로 넣어야함
-'''
-val에는 val = [(talks_id,start_time,end_time,duration,sentence),(talks_id,start_time,end_time,duration,sentence)] 형식의 리스트가 와야함
-port의 default는 3306, 즉 로컬
-pwd에는 본인의 MySql 비밀번호. default는 1234
-'''
+
+#val에는 val = [(talks_id,start_time,end_time,duration,sentence),(talks_id,start_time,end_time,duration,sentence)] 형식의 리스트가 와야함
+#port의 default는 3306, 즉 로컬
+#pwd에는 본인의 MySql 비밀번호. default는 1234
+
     # mysql workbench에서 지정한 db 정보
     mydb = mysql.connector.connect(
         host = "localhost",
