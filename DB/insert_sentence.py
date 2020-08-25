@@ -33,7 +33,7 @@ mydb = mysql.connector.connect(
     host = "localhost",
     user = "tedbear",
     port = 3306,
-    password = "1234",
+    password = "SkFch4gi38sf@",
     database = "tedbear",
      auth_plugin='mysql_native_password')
 

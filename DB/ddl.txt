@@ -4,6 +4,13 @@ GRANT ALL PRIVILEGES ON tedbear.* TO 'tedbear'@'localhost';
 
 ------------------------------------------
 
+DROP TABLE user;
+DROP TABLE talks;
+DROP TABLE related_talks;
+DROP TABLE watching_record;
+DROP TABLE shadowing_record;
+DROP TABLE sentence;
+
 
 USE tedbear;
 CREATE TABLE IF NOT EXISTS `user` (
@@ -20,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `user` (
 CREATE TABLE IF NOT EXISTS `tedbear`.`talks` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `url` VARCHAR(1024) NOT NULL,
-  `youtube_url` text NULL,
+  `yt_url` VARCHAR(20) NULL,
   `title` VARCHAR(1024) NULL,
   `speaker` VARCHAR(1024) NULL,
   `published_date` DATE NULL,
@@ -68,7 +75,7 @@ CREATE TABLE IF NOT EXISTS `tedbear`.`shadowing_record` (
   `user_audio` varchar(45) NULL,
   `converted_audio` varchar(45) NOT NULL,
   `accent_img` varchar(45) NULL,
-  'strength_img` varchar(45) NULL,
+  `strength_img` varchar(45) NULL,
   `speed_img` varchar(45) NULL,
   `pronunciation_img` varchar(45) NULL,
   PRIMARY KEY (`id`))
@@ -80,8 +87,8 @@ CREATE TABLE IF NOT EXISTS `tedbear`.`sentence` (
   `start_time` float NULL,
   `end_time` float NULL,
   `duration` float NULL,
-  'audio' varchar(45) NULL,
-  'sentence_kr' varchar(100) NULL,
-  'sentence_en' varchar(100) NULL,
+  `audio` varchar(45) NULL,
+  `sentence_kr` TEXT NULL,
+  `sentence_en` TEXT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
