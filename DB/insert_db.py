@@ -157,7 +157,7 @@ def insert_related_talks(val,port=3306,pwd=1234): # related_talks에 insert하�
 
 
 def init_sentence(port=3306,pwd=1234): # sentence table을 초기화 하는 함수입니다.
-    data = pd.read_csv('../ted_scrap/data/sentence_chunk_split.csv')
+    data = pd.read_csv('../ted_scrap/data/sentence_chunk_split.csv',encoding='latin-1')
     data = data.where(pd.notnull(data), None)
 
     data.rename(columns = {"start": "start_time",
