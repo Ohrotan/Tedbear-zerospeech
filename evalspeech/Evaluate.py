@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[7]:
+# In[223]:
 
 
 import numpy as np
@@ -31,7 +31,7 @@ warnings.filterwarnings("ignore")
 import copy
 
 
-# In[40]:
+# In[224]:
 
 
 import speech_recognition as sr9
@@ -63,7 +63,7 @@ def get_word_error_rate(r, h):
     return 100-result
 
 
-# In[41]:
+# In[225]:
 
 
 import sys
@@ -232,12 +232,11 @@ def wer(r, h):
     return  result
 
 
-# In[15]:
+# In[226]:
 
 
 def preprocess(ted_audio_path,user_audio_path,png_save_path):
     ted,sr=librosa.load(ted_audio_path,sr=16000) # ted는 amplitude ,sr은 sample rate 16000고정
-
     abs_ted=abs(ted) # amplitude에 절대값취하기
     max_values_in_width=[]  # value = 한 구간(width) 에서의 최고값이 들어갈자리
     loc_of_max_values_in_width=[]   # loc 은 value의 index를 나타내는 값
@@ -268,7 +267,6 @@ def preprocess(ted_audio_path,user_audio_path,png_save_path):
     after_interpolate=list(map(lambda x: 0 if x<0 else x,df_list))  # 요거는 2차함수꼴로 깍아주다보면 -값이 발생해서 그걸 0으로바꿔주는과정
     df[0]=after_interpolate
     df.fillna(0,inplace=True)
-
 # ###############위에과정반복###########
     you,sr1=librosa.load(user_audio_path,sr=16000)
     abs_you=abs(you)
@@ -289,7 +287,7 @@ def preprocess(ted_audio_path,user_audio_path,png_save_path):
         else:
             c1=c1+1
             i=width_you*c1
-    normalize=   (max(abs_ted)/max(abs_you))*0.95            ## 두 음성데이터의 크기 맞춰주기위해 최대값기준으로 맞춰줌
+    normalize=   (max(abs_ted)/max(abs_you))          ## 두 음성데이터의 크기 맞춰주기위해 최대값기준으로 맞춰줌
     after_normalize=list(map(lambda x: normalize*x, max_values_in_width_1))         
     empty_array_you=np.empty(len(abs_you))
     empty_array_you.fill(np.nan)       
@@ -306,7 +304,7 @@ def preprocess(ted_audio_path,user_audio_path,png_save_path):
     return first_local_maximum_ted, first_local_maximum_you,df,df1
 
 
-# In[22]:
+# In[227]:
 
 
 def eval_speed(first_local_maximum_ted, first_local_maximum_you,df,df1):
@@ -315,19 +313,21 @@ def eval_speed(first_local_maximum_ted, first_local_maximum_you,df,df1):
         blue_ted=list(df[0])  # blue가 테드
         orange_you=list(df1[0])# orange가 나
         add=[0 for z in range(diff)]
-        blue_ted_added=add+blue_ted                 #  더해줘서 blue1생김
+        blue_ted_added=add+blue_ted                 
         df_ted_added=pd.DataFrame(blue_ted_added)
     # 점수 짧은걸써야함 first1부터 df1[0]       ############# 이거는 점수구하는 과정###########
         if len(df_ted_added[0])>len(df1[0]):
-            index_diff=((len(df_ted_added[0])-(len(df1[0]))))
+            index_diff=abs((len(df_ted_added[0])-(len(df1[0]))))   
             time_diff=index_diff/16000
             time_diff_per=index_diff/(len(df_ted_added[0])-first_local_maximum_you)
             time_result=round((1-time_diff_per)*100,1)
+           
         else:
-            index_diff=((len(df1[0]))-(len(df_ted_added[0])))
+            index_diff=abs((len(df1[0]))-(len(df_ted_added[0])))  
             time_diff=index_diff/16000
             time_diff_per=index_diff/(len(df_ted_added[0])-first_local_maximum_you)
-            time_result=round((1+time_diff_per)*100,3)   
+            time_result=round((1+time_diff_per)*100,1)
+            
     #테듣가 더길떄               ######## 방금 위에한거의 반대과정 A보다 B가 늦게시작할경우######
     elif first_local_maximum_you<=first_local_maximum_ted:
         diff=first_local_maximum_ted-first_local_maximum_you
@@ -337,21 +337,31 @@ def eval_speed(first_local_maximum_ted, first_local_maximum_you,df,df1):
         orange_you_added=add+orange_you # 내가짧은이까 더해줘서 orange1이생김
         df_you_added=pd.DataFrame(orange_you_added)
         # 테드가 첨부분은 ㄴ더 나중에나옴 
-        if len(df_you_added[0])>len(df[0]):
-            index_diff=((len(df_you_added[0])-(len(df[0]))))
+        if len(df_you_added[0])>len(df[0]):    
+            index_diff=abs((len(df_you_added[0])-(len(df[0]))))
             time_diff=index_diff/16000
             time_diff_per=index_diff/(len(df[0])-first_local_maximum_ted)
             time_result=round((1+time_diff_per)*100,1)
         else:
-            index_diff=((len(df[0]))-(len(df_you_added[0])))
+            index_diff=abs((len(df[0]))-(len(df_you_added[0])))
             time_diff=index_diff/16000
             time_diff_per=index_diff/(len(df[0])-first_local_maximum_ted)
             time_result=round((1-time_diff_per)*100,1)
-            print(time_diff,time_result)
-    return time_diff, time_result
+    global speed_result
+    if time_diff < 1:
+        speed_result='Excellent'
+        return time_diff, time_result ,speed_result
+    elif time_diff< 2:
+        speed_result = 'Good'
+        return time_diff, time_result ,speed_result
+    else:
+        speed_result= 'Bad'
+        return time_diff, time_result ,speed_result
+    return time_diff, time_result,speed_result
+    
 
 
-# In[34]:
+# In[228]:
 
 
 def eval_strength(first_local_maximum_ted, first_local_maximum_you,df,df1):
@@ -363,35 +373,74 @@ def eval_strength(first_local_maximum_ted, first_local_maximum_you,df,df1):
         add=[0 for z in range(diff)]
         blue_ted_added=add+blue_ted                 #  더해줘서 blue1생김
         df_ted_added=pd.DataFrame(blue_ted_added)
-        plt.figure(figsize=(20,8))
+        plt.figure(figsize=(20,5))
         # 점수 짧은걸써야함 first1부터 df1[0]       ############# 이거는 점수구하는 과정###########
         if len(df_ted_added[0])>len(df1[0]):
             area =[]
             for z in range(first_local_maximum_you,len(df1[0]),1):
                 area.append(df_ted_added[0][z])        
             points=1-(sum(abs(df1[0][first_local_maximum_you:len(df1[0])]-df_ted_added[0][first_local_maximum_you:len(df1[0])]))/sum(area))
-            #points1=np.correlate(  df_ted_added[0] [first_local_maximum_you:len(df1[0])],df1[0][first_local_maximum_you:len(df1[0])])
-            points2=np.mean(np.correlate(  df_ted_added[0] [first_local_maximum_you:len(df1[0])],df1[0][first_local_maximum_you:len(df1[0])],'full'))
+            
             points3=cos_sim(df_ted_added[0] [first_local_maximum_you:len(df1[0])],df1[0][first_local_maximum_you:len(df1[0])])
+            
+            ranks =[]
+            for i in range(1,len(df1[0])-1,1):
+                if df1[0][i]>0.15:
+                    if df1[0][i]>df1[0][i-1] and df1[0][i]>df1[0][i+1]:
+                        ranks.append(df1[0][i]/max(df1[0]))    
+            ranks1=[]
+            for i in range(1,len(df_ted_added[0])-1,1):
+                if df_ted_added[0][i]>0.15:
+                    if df_ted_added[0][i]>df_ted_added[0][i-1] and df_ted_added[0][i]>df_ted_added[0][i+1]:
+                        ranks1.append(df_ted_added[0][i]/max(df_ted_added[0]))
+            diffrent=[]
+            if len(ranks)>len(ranks1):
+                for i in range(len(ranks1)):
+                    diffrent.append(abs(ranks1[i]-ranks[i]))
+            else:
+                for i in range(len(ranks)):
+                    diffrent.append(abs(ranks1[i]-ranks[i]))
+            points4=1-(sum(diffrent)/sum(ranks1))
+            
+            
             
         else:
             area =[]
             for z in range(first_local_maximum_you,len(df_ted_added[0]),1):
                 area.append(df_ted_added[0][z])        
-            points=1-(sum(abs(df1[0][first_local_maximum_you:len(df_ted_added[0])]-df_ted_added[0][first_local_maximum_you:len(df_ted_added[0])]))/sum(area))
-            #points1=np.correlate(  df_ted_added[0] [first_local_maximum_you:len(df1[0])],df1[0][first_local_maximum_you:len(df1[0])])
-            points2=np.mean(np.correlate(  df_ted_added[0] [first_local_maximum_you:len(df_ted_added[0])],df1[0][first_local_maximum_you:len(df_ted_added[0])],'full'))
+            points=1-(sum(abs(df1[0][first_local_maximum_you:len(df_ted_added[0])]-df_ted_added[0][first_local_maximum_you:len(df_ted_added[0])]))/sum(area))     
             points3=cos_sim(df_ted_added[0] [first_local_maximum_you:len(df_ted_added[0])],df1[0][first_local_maximum_you:len(df_ted_added[0])]  )
+            
+            ranks =[]
+            for i in range(1,len(df1[0])-1,1):
+                if df1[0][i]>0.15:
+                    if df1[0][i]>df1[0][i-1] and df1[0][i]>df1[0][i+1]:
+                        ranks.append(df1[0][i]/max(df1[0]))    
+            ranks1=[]
+            for i in range(1,len(df_ted_added[0])-1,1):
+                if df_ted_added[0][i]>0.15:
+                    if df_ted_added[0][i]>df_ted_added[0][i-1] and df_ted_added[0][i]>df_ted_added[0][i+1]:
+                        ranks1.append(df_ted_added[0][i]/max(df_ted_added[0]))
+            diffrent=[]
+            if len(ranks)>len(ranks1):
+                for i in range(len(ranks1)):
+                    diffrent.append(abs(ranks1[i]-ranks[i]))
+            else:
+                for i in range(len(ranks)):
+                    diffrent.append(abs(ranks1[i]-ranks[i]))
+            points4=1-(sum(diffrent)/sum(ranks1))
+            
             ##############################
-        your_voice = gaussian_filter1d(df1[0], sigma=2)      # 이거도 뾰족부분 깍는과정인데 왜 두번들어가더라#
-        line1,=plt.plot(your_voice,color='orange',linewidth=5)
-        line2,=plt.plot(df_ted_added[0],color='blue',linewidth=5)
-        plt.title('Strength Result',fontsize=50)
-        plt.legend(handles=(line1,line2),labels=('Ted','You'),fontsize=20)
-        plt.ylabel('Strength',fontsize=20)
-        plt.tick_params(axis='x', which='both',bottom=False,top=False,labelbottom=False)
-        plt.show()
-        plt.savefig(png_save_path+'strength_result.png')
+        orange_graph = gaussian_filter1d(df1[0], sigma=2)      # 이거도 뾰족부분 깍는과정인데 왜 두번들어가더라#
+        blue_graph=df_ted_added[0]
+        #line1,=plt.plot(orange_graph,color='orange',linewidth=5)
+        #line2,=plt.plot(blue_graph,color='blue',linewidth=5)
+        #plt.title('Strength Result',fontsize=50)
+        #plt.legend(handles=(line1,line2),labels=('You','Ted'),fontsize=20)
+        #plt.ylabel('Strength',fontsize=20)
+        #plt.tick_params(axis='x', which='both',bottom=False,top=False,labelbottom=False)
+        #plt.show()
+        #plt.savefig(png_save_path+'strength_result.png')
     #테듣가 더길떄               ######## 방금 위에한거의 반대과정 A보다 B가 늦게시작할경우######
     elif first_local_maximum_you<=first_local_maximum_ted:
         diff=first_local_maximum_ted-first_local_maximum_you
@@ -400,40 +449,96 @@ def eval_strength(first_local_maximum_ted, first_local_maximum_you,df,df1):
         add=[0 for z in range(diff)]
         orange_you_added=add+orange_you # 내가짧은이까 더해줘서 orange1이생김
         df_you_added=pd.DataFrame(orange_you_added)
-        plt.figure(figsize=(20,8));
+        plt.figure(figsize=(20,5));
         # 테드가 첨부분은 ㄴ더 나중에나옴 
         if len(df_you_added[0])>len(df[0]):
             area =[]
             for z in range(first_local_maximum_ted,len(df[0]),1):
                 area.append(df[0][z])
             points=1-(sum(abs(df[0][first_local_maximum_ted:len(df[0])]-df_you_added[0][first_local_maximum_ted:len(df[0])]))/sum(area))
-            #points1=np.correlate(df_you_added[0][first_local_maximum_ted:len(df[0])],df[0][first_local_maximum_ted:len(df[0])])
-            points2=np.mean(np.correlate(df_you_added[0][first_local_maximum_ted:len(df[0])],df[0][first_local_maximum_ted:len(df[0])],'full'))
             points3=cos_sim( df_you_added[0][first_local_maximum_ted:len(df[0])],df[0][first_local_maximum_ted:len(df[0])] )
+            
+            ranks =[]
+            for i in range(1,len(df[0])-1,1):
+                if df[0][i]>0.15:
+                    if df[0][i]>df[0][i-1] and df[0][i]>df[0][i+1]:
+                        ranks.append(df[0][i]/max(df[0]))    
+            ranks1=[]
+            for i in range(1,len(df_you_added[0])-1,1):
+                if df_you_added[0][i]>0.15:
+                    if df_you_added[0][i]>df_you_added[0][i-1] and df_you_added[0][i]>df_you_added[0][i+1]:
+                        ranks1.append(df_you_added[0][i]/max(df_you_added[0]))
+            diffrent=[]
+            if len(ranks)>len(ranks1):
+                for i in range(len(ranks1)):
+                    diffrent.append(abs(ranks1[i]-ranks[i]))
+            else:
+                for i in range(len(ranks)):
+                    diffrent.append(abs(ranks1[i]-ranks[i]))
+            points4=1-(sum(diffrent)/sum(ranks))
         else:
             area =[]
             for z in range(first_local_maximum_ted,len(df_you_added[0]),1):
                     area.append(df[0][z])
             points=1-(sum(abs(df1[0][first_local_maximum_ted:len(df_you_added[0])]-df_you_added[0][first_local_maximum_ted:len(df_you_added[0])]))/sum(area))
-            #points1=np.correlate(df_you_added[0][first_local_maximum_ted:len(df_you_added[0])],df[0][first_local_maximum_ted:len(df_you_added[0])])
-            points2=np.mean(np.correlate(df_you_added[0][first_local_maximum_ted:len(df_you_added[0])],df[0][first_local_maximum_ted:len(df_you_added[0])],'full'))
             points3=cos_sim( df_you_added[0][first_local_maximum_ted:len(df_you_added[0])],df[0][first_local_maximum_ted:len(df_you_added[0])] )
+            
+            ranks =[]
+            for i in range(1,len(df[0])-1,1):
+                if df[0][i]>0.15:
+                    if df[0][i]>df[0][i-1] and df[0][i]>df[0][i+1]:
+                        ranks.append(df[0][i]/max(df[0]))    
+            ranks1=[]
+            for i in range(1,len(df_you_added[0])-1,1):
+                if df_you_added[0][i]>0.15:
+                    if df_you_added[0][i]>df_you_added[0][i-1] and df_you_added[0][i]>df_you_added[0][i+1]:
+                        ranks1.append(df_you_added[0][i]/max(df_you_added[0]))
+            diffrent=[]
+            if len(ranks)>len(ranks1):
+                for i in range(len(ranks1)):
+                    diffrent.append(abs(ranks1[i]-ranks[i]))
+            else:
+                for i in range(len(ranks)):
+                    diffrent.append(abs(ranks1[i]-ranks[i]))
+            points4=1-(sum(diffrent)/sum(ranks))
         
-        line1,=plt.plot(df[0],color='blue',linewidth=5)  
-        line2,=plt.plot(df_you_added[0],color='orange',linewidth=5)
-        plt.title('Strength Result',fontsize=50)
-        plt.legend(handles=(line1,line2),labels=('You','Ted'),fontsize=20)
-        plt.ylabel('Strength',fontsize=20)
-        plt.tick_params(axis='x', which='both',bottom=False,top=False,labelbottom=False)
-        plt.show()
-        plt.savefig(png_save_path+'strength_result.png')
+        blue_graph=df[0]
+        orange_graph=df_you_added[0]
+        
+        #line1,=plt.plot(blue_graph,color='blue',linewidth=5)  
+        #line2,=plt.plot(orange_graph,color='orange',linewidth=5)
+        #plt.title('Strength Result',fontsize=50)
+        #plt.legend(handles=(line1,line2),labels=('Ted','You'),fontsize=20)
+        #plt.ylabel('Strength',fontsize=20)
+        #plt.tick_params(axis='x', which='both',bottom=False,top=False,labelbottom=False)
+        #plt.show()
+        #plt.savefig(png_save_path+'strength_result.png')
+    
     result1=int(points*100)
-    result2=points2
-    result3=points3
-    return result1, result2, result3
+    result4=int(points3*100)
+    result5=int(points4*100)
+    results=[result1,result4,result5]
+    sorted(results)
+    del results[0]
+    strength_result_rate=sum(results)/2
+    global strength_result
+    if strength_result_rate>80:
+        strength_result='Excellent'
+    elif strength_result_rate>60:
+        strength_result='Good'
+    else:
+        strength_result='Bad'
+    line1,=plt.plot(blue_graph,color='blue',linewidth=5)  
+    line2,=plt.plot(orange_graph,color='orange',linewidth=5)
+    plt.title('Strength Result',fontsize=50)
+    plt.legend(handles=(line1,line2),labels=('Ted','You'),fontsize=20)
+    plt.ylabel('Strength',fontsize=20)
+    plt.tick_params(axis='x', which='both',bottom=False,top=False,labelbottom=False)
+    plt.savefig(png_save_path+'strength_result.png')
+    return strength_result_rate,strength_result
 
 
-# In[35]:
+# In[229]:
 
 
 def eval_pitch(ted_audio_path,user_audio_path,png_save_path):
@@ -465,7 +570,7 @@ def eval_pitch(ted_audio_path,user_audio_path,png_save_path):
         new_f0[np.where(new_f0<75)]=0
         value=[]
         loc=[]
-        c3=0
+        c3=0                                              # 코랄  유 그린 테드
         i=0
         new_f0=list(new_f0)
         while i < len(range(len(new_f0))):
@@ -484,8 +589,8 @@ def eval_pitch(ted_audio_path,user_audio_path,png_save_path):
         for i in range(len(loc)):
             location=loc[i]
             base[location]=value[i]
-        df_green=pd.DataFrame(base)
-        plt.figure(figsize=(20,8))
+        df_green=pd.DataFrame(base)                     
+        plt.figure(figsize=(20,5))
         df_green.interpolate(method='polynomial',order=2,linewidth=2,inplace=True)
 
         bbb=list(df_green[0])
@@ -532,7 +637,43 @@ def eval_pitch(ted_audio_path,user_audio_path,png_save_path):
             if df_coral[0][h]>max(f_you)*1.2:
                 df_coral[0][h]=max(f_you)*1.2
         df_coral[0]=df_coral[0]*max(f_ted)/max(f_you)
-
+        
+        area= []
+        diff_areas=[]
+        if len(df_coral[0])>len(df_green[0]):
+            for i in range(diff,len(df_green[0])):
+                area.append(df_green[0][i])
+                diff_areas.append(abs(df_coral[0][i]-df_green[0][i]))        
+            result=1-(sum(diff_areas/sum(area)))
+        else:
+            for i in range(diff,len(df_coral[0])):
+                area.append(df_green[0][i])
+                diff_areas.append(abs(df_coral[0][i]-df_green[0][i]))        
+            result=1-(sum(diff_areas)/sum(area))
+        
+        ranks =[]
+        for i in range(1,len(df_green[0])-1,1):
+            if df_green[0][i]>60:
+                if df_green[0][i]>df_green[0][i-1] and df_green[0][i]>df_green[0][i+1]:
+                    ranks.append(df_green[0][i]/max(df_green[0]))    
+        ranks1=[]
+        for i in range(1,len(df_coral[0])-1,1):
+            if df_coral[0][i]>60:
+                if df_coral[0][i]>df_coral[0][i-1] and df_coral[0][i]>df_coral[0][i+1]:
+                    ranks1.append(df_coral[0][i]/max(df_coral[0]))
+        diffrent=[]
+        if len(ranks)>len(ranks1):
+            for i in range(len(ranks1)):
+                diffrent.append(abs(ranks1[i]-ranks[i]))
+        else:
+            for i in range(len(ranks)):
+                diffrent.append(abs(ranks1[i]-ranks[i]))
+        points4=1-(sum(diffrent)/sum(ranks))
+        
+        
+        
+        
+        
     else:   # 테드가 더늦겟시작
         diff=np.where(f_ted>=60)[0][0]-np.where(f_you>=60)[0][0]
        
@@ -566,7 +707,6 @@ def eval_pitch(ted_audio_path,user_audio_path,png_save_path):
         df_green=pd.DataFrame(base)
         df_green.interpolate(method='polynomial',order=2,linewidth=2,inplace=True)
         bbb=list(df_green[0])
-        #print(bbb)
         ccc=list(map(lambda x: 0 if x<0 else x ,bbb))
         df_green[0]=ccc
         df_green.fillna(0,inplace=True)
@@ -575,7 +715,7 @@ def eval_pitch(ted_audio_path,user_audio_path,png_save_path):
                 df_green[0][g]=max(f_you)*1.2  
         f_ted1=f_ted
         #f_ted1=np.r_[f_ted,np.zeros(abs(len(new_ted)-len(f_ted)))]
-        cal2=copy.copy(f_ted1)
+        cal2=copy.copy(f_ted1)                                              # 그린  유 코랄 테드
         cal2[np.where(f_ted1<75)]=0
         f_ted1[np.where(f_ted1<75)]=0
         value2=[]
@@ -608,7 +748,51 @@ def eval_pitch(ted_audio_path,user_audio_path,png_save_path):
         for g in range(len(df_coral)):
             if df_coral[0][g]>max(f_ted)*1.2:
                 df_coral[0][g]=max(f_ted)*1.2
-
+        df_green[0]=df_green[0]*max(f_ted)/max(f_you)        
+                
+        area= []
+        diff_areas=[]
+        if len(df_coral[0])>len(df_green[0]):
+            for i in range(diff,len(df_green[0])):
+                area.append(df_coral[0][i])
+                diff_areas.append(abs(df_coral[0][i]-df_green[0][i]))        
+            result=1-(sum(diff_areas/sum(area)))
+        else:
+            for i in range(diff,len(df_coral[0])):
+                area.append(df_coral[0][i])
+                diff_areas.append(abs(df_coral[0][i]-df_green[0][i]))        
+            result=1-(sum(diff_areas)/sum(area))
+        
+        ranks =[]
+        for i in range(1,len(df_green[0])-1,1):
+            if df_green[0][i]>60:
+                if df_green[0][i]>df_green[0][i-1] and df_green[0][i]>df_green[0][i+1]:
+                    ranks.append(df_green[0][i]/max(df_green[0]))    
+        ranks1=[]
+        for i in range(1,len(df_coral[0])-1,1):
+            if df_coral[0][i]>60:
+                if df_coral[0][i]>df_coral[0][i-1] and df_coral[0][i]>df_coral[0][i+1]:
+                    ranks1.append(df_coral[0][i]/max(df_coral[0]))
+        diffrent=[]
+        if len(ranks)>len(ranks1):
+            for i in range(len(ranks1)):
+                diffrent.append(abs(ranks1[i]-ranks[i]))
+        else:
+            for i in range(len(ranks)):
+                diffrent.append(abs(ranks1[i]-ranks[i]))
+        points4=1-(sum(diffrent)/sum(ranks1))
+       
+            
+    result=int(result*100)
+    result1=int(points4*100)
+    pitch_result_rate=max(result,result1)
+    global pitch_result
+    if pitch_result_rate>= 85:
+        pitch_result='Excellent'
+    elif pitch_result_rate>=65:
+        pitch_result='Good'
+    else:
+        pitch_result='Bad'
     plt.plot(df_green,color='mediumseagreen',linewidth=5)
     plt.plot(df_coral,color='coral',linewidth=5) 
     plt.title('Pitch Result',fontsize=50)
@@ -616,9 +800,10 @@ def eval_pitch(ted_audio_path,user_audio_path,png_save_path):
     plt.ylabel('Pitch',fontsize=20)
     plt.tick_params(axis='x', which='both',bottom=False,top=False,labelbottom=False)
     plt.savefig(png_save_path +'pitch_result.png')
+    return pitch_result_rate, pitch_result
 
 
-# In[48]:
+# In[230]:
 
 
 def eval_pronounciation(ted_audio_path,user_audio_path):
@@ -637,20 +822,47 @@ def eval_pronounciation(ted_audio_path,user_audio_path):
     mine_token=word_tokenize(mine)
     get_word_error_rate(mine_token,answer_token)
     result=wer(mine_token,answer_token)
-    return ted_answer, your_answer,result
+    global pronounciation_result
+    if result>80:
+        pronounciation_result='Excellent'
+    elif result>60:
+        pronounciation_result='Good'
+    else:
+        pronounciation_result='Bad'    
+    return ted_answer, your_answer,result,pronounciation_result
 
 
-# In[50]:
+# In[231]:
+
+
+def eval_total(speed_result,strength_result,pitch_result,pronounciation_result):
+    result_list=[speed_result,strength_result,pitch_result,pronounciation_result]
+    score=0
+    for i in result_list:
+        if i=='Excellent':
+            score+=3
+        elif i=='Good':
+            score+=2
+        else:
+            score+=1
+    if score >=11:
+        total_result='Excellent'
+    elif score>=6:
+        total_result='Good'
+    else:
+        total_result='Bad'
+    return total_result
+            
+   
+    
+
+
+# In[232]:
 
 
 def eval(ted_audio_path,user_audio_path,png_save_path):
     first_local_maximum_you,first_local_maximum_ted,df,df1 = preprocess(ted_audio_path,user_audio_path,png_save_path)
-    return  eval_speed(first_local_maximum_ted, first_local_maximum_you,df,df1),eval_strength(first_local_maximum_ted, first_local_maximum_you,df,df1),eval_pitch(ted_audio_path,user_audio_path,png_save_path),eval_pronounciation(ted_audio_path,user_audio_path)
-
-
-# In[ ]:
-
-
+    return eval_speed(first_local_maximum_ted, first_local_maximum_you,df,df1),eval_strength(first_local_maximum_ted, first_local_maximum_you,df,df1),eval_pitch(ted_audio_path,user_audio_path,png_save_path),eval_pronounciation(ted_audio_path,user_audio_path),eval_total(speed_result,strength_result,pitch_result,pronounciation_result)
 
 
 
