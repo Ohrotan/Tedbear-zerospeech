@@ -22,14 +22,14 @@ def speaker_json(user_audio_path, org_audio_path):
 
     file_list =os.listdir(path_dir) #경로 읽어 파일명 리스트 만들기
     file_list.sort() #정렬
-    with open("./datasets/2019/english/speakers.json", "r") as st_json: #json 파일 읽기
+    with open("./datasets/english/speakers.json", "r") as st_json: #json 파일 읽기
         speakers = json.load(st_json)
         for i in file_list:
             a=i.index('_') #file_list 형식이 이름_번호 형식이라 잘라야함
             speaker=i[:a]
             if speaker not in speakers: #speakers.json에 없으면 추가
                 speakers.append(speaker)
-    with open("./datasets/2019/english/speakers.json", 'w', encoding='utf-8') as make_file:
+    with open("./datasets/english/speakers.json", 'w', encoding='utf-8') as make_file:
 
         json.dump(speakers, make_file, indent="\t") # 추가성공
 
@@ -38,14 +38,14 @@ def speaker_json(user_audio_path, org_audio_path):
 
     file_list =os.listdir(path_dir) #경로 읽어 파일명 리스트 만들기
     file_list.sort() #정렬
-    with open("./datasets/2019/english/speakers.json", "r") as st_json:#json 파일 읽기
+    with open("./datasets/english/speakers.json", "r") as st_json:#json 파일 읽기
         speakers = json.load(st_json)
         for i in file_list:
             a=i.index('_')#file_list 형식이 이름_번호 형식이라 잘라야함
             speaker=i[:a]
             if speaker not in speakers:#speakers.json에 없으면 추가
                 speakers.append(speaker)
-    with open("./datasets/2019/english/speakers.json", 'w', encoding='utf-8') as make_file:
+    with open("./datasets/english/speakers.json", 'w', encoding='utf-8') as make_file:
 
         json.dump(speakers, make_file, indent="\t") #추가성공
 
@@ -56,7 +56,7 @@ def train_json(user_audio_path): # 유저 정보를 기록하는 train.json 수�
     file_list =os.listdir(path_dir) #경로 읽어 파일명 리스트 만들기
     file_list.sort() #정렬
 
-    with open("./datasets/2019/english/train.json", "r") as st_json:
+    with open("./datasets/english/train.json", "r") as st_json:
         train = json.load(st_json)
         for i in file_list:
             with contextlib.closing(wave.open(path_dir + i,'r')) as f: # wav파일 읽기
@@ -72,7 +72,7 @@ def train_json(user_audio_path): # 유저 정보를 기록하는 train.json 수�
                 if a not in train:
                     train.append(a) # json에 없으면 추가
 
-    with open("./datasets/2019/english/train.json", 'w', encoding='utf-8') as make_file:
+    with open("./datasets/english/train.json", 'w', encoding='utf-8') as make_file:
 
         json.dump(train, make_file, indent="\t") #json에 추가 완료
 
@@ -81,7 +81,7 @@ def test_json(org_audio_path): # ted오디오의 정보를 기록하는 test.jso
     path_dir =  str(org_audio_path)#경로 끝에 / 꼭 붙이기
     file_list =os.listdir(path_dir) #경로 읽어 파일명 리스트 만들기
     file_list.sort()
-    with open("./datasets/2019/english/test.json", "r") as st_json:
+    with open("./datasets/english/test.json", "r") as st_json:
         test = json.load(st_json)
         for i in file_list:
             with contextlib.closing(wave.open(path_dir + i,'r')) as f: # wav파일 읽기
@@ -97,7 +97,7 @@ def test_json(org_audio_path): # ted오디오의 정보를 기록하는 test.jso
                 if a not in test:
                     test.append(a)
 
-    with open("./datasets/2019/english/test.json", 'w', encoding='utf-8') as make_file:
+    with open("./datasets/english/test.json", 'w', encoding='utf-8') as make_file:
 
         json.dump(test, make_file, indent="\t")  #json에 추가 완료
 
@@ -106,7 +106,7 @@ def synthesis_json(user_id, org_audio_path): # 음성 합성할 때 쓸 synthesi
     user_name=str(user_id) #user_id로 speaker이용
     path_dir=str(org_audio_path) #변환 대상이 될 ted영상의 경로
     file_list=os.listdir(path_dir) 
-    with open("./datasets/2019/english/synthesis_list.json", "r") as st_json: 
+    with open("./datasets/english/synthesis_list.json", "r") as st_json: 
         synthesis = json.load(st_json)
         synthesis=[] #초기화
         for i in file_list:
@@ -118,7 +118,7 @@ def synthesis_json(user_id, org_audio_path): # 음성 합성할 때 쓸 synthesi
             if a not in synthesis:
                     synthesis.append(a)
 
-    with open("./datasets/2019/english/synthesis_list.json", 'w', encoding='utf-8') as make_file:
+    with open("./datasets/english/synthesis_list.json", 'w', encoding='utf-8') as make_file:
 
         json.dump(synthesis, make_file, indent="\t") # 추가 완료
 

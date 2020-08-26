@@ -79,10 +79,10 @@ def preprocess_dataset(cfg):
     for split in ["train", "test"]: 
         print("Extracting features for {} set".format(split)) 
         futures = []
-        split_path = out_dir / cfg.dataset.language / split # 경로지정 dataset/2019/english/train or test
-        with open(split_path.with_suffix(".json")) as file:
+        split_path = out_dir / cfg.dataset.language / split # 위에서 정해진 out_dir 하위에 train과 test가 차례로 split_path가 됨, cfg.dataset.language는 config/preprocessing.yaml 안에 dataset: 2019/english라고 되어있는데 이 부분은 config/dataset/2019/english.yaml 파일로 연결됨, 이안에 language 변수 있음
+        with open(split_path.with_suffix(".json")) as file: # train.json, test.json 차례로 불러오게됨
             metadata = json.load(file)
-            for in_path, start, duration, out_path in metadata: 
+            for in_path, start, duration, out_path in metadata: # json 파일 열어보면 순서대로 in_path, start, duration, out_path 정보를 주고 있음, 그러니 우리가 커스터마이징할 때 이 json 파일도 변경해야함
                 wav_path = in_dir / in_path
                 out_path = out_dir / out_path
                 out_path.parent.mkdir(parents=True, exist_ok=True)

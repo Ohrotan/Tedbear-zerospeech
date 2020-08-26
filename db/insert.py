@@ -13,7 +13,7 @@ def insert_user(val,port=3306,pwd=1234):
 #port의 default는 3306, 즉 로컬
 #pwd에는 본인의 MySql 비밀번호. default는 1234
 
-# mysql workbench에서 지정한 db 정보
+# mysql에서 지정한 db 정보
     mydb = mysql.connector.connect(
         host = "localhost",
         user = "tedbear",

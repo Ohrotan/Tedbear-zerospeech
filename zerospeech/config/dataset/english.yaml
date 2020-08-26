@@ -1,5 +1,5 @@
 dataset:
   dataset: 2019
   language: english
-  path: 2019/english
+  path: english
   n_speakers: 102
