@@ -51,7 +51,7 @@ def init_talks(port=3306, pwd=1234):# talks 테이블을 초기 상태로 만드
         auth_plugin='mysql_native_password')
     
     mycursor = mydb.cursor()
-    sql='Delete from talks'  # 초기화
+    sql='truncate talks'  # 초기화
     mycursor.execute(sql)
     mydb.commit()
     val1 = data2[['talk_id','url','yt_url','title','speaker_1','published_date','duration',
@@ -121,7 +121,7 @@ def init_related_talks(port=3306,pwd=1234): # related_talks를 초기 상태로 
         database = "tedbear",
         auth_plugin='mysql_native_password')
     mycursor = mydb.cursor()
-    sql='Delete from related_talks'  # 초기화
+    sql='truncate related_talks'  # 초기화
     mycursor.execute(sql)
     mydb.commit()
     cols = "`,`".join([str(i) for i in related.columns.tolist()])
@@ -159,7 +159,8 @@ def insert_related_talks(val,port=3306,pwd=1234): # related_talks에 insert하�
 def init_sentence(port=3306,pwd=1234): # sentence table을 초기화 하는 함수입니다.
     data = pd.read_csv('../ted_scrap/data/sentence_chunk_split.csv',encoding='latin-1')
     data = data.where(pd.notnull(data), None)
-
+    data['sentence_en']=data['sentence_en'].str.replace(r"\(.*\)","")
+    data = data[data.sentence_en != ' ']
     data.rename(columns = {"start": "start_time",
 
      "end": "end_time"}, inplace = True)
@@ -173,7 +174,7 @@ def init_sentence(port=3306,pwd=1234): # sentence table을 초기화 하는 함�
         auth_plugin='mysql_native_password')
 
     mycursor = mydb.cursor()
-    sql='Delete from sentence'  # 초기화
+    sql='truncate sentence'  # 초기화
     mycursor.execute(sql)
     mydb.commit()
     cols = "`,`".join([str(i) for i in data.columns.tolist()])
