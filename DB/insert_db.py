@@ -8,15 +8,15 @@ from ast import literal_eval
 
 def insert_user(val,port=3306,pwd=1234): 
 
-#val에는     val = [(11,'fkfk@dassk.com','YangCHOI', 'ulsan'),(52,'lkdds@daksad.com','BAEK', 'busan')] 와 같이 
-#[(아이디,email,name,pwd),(아이디,email,name,pwd)] 형식의 리스트가 와야함
+#val에는     val = [('fkfk@dassk.com','YangCHOI', 'sha256'),('lkdds@daksad.com','BAEK', 'sha256')] 와 같이 
+#[(email,name,pwd),(email,name,pwd)] 형식의 리스트가 와야함
 #port의 default는 3306, 즉 로컬
 #pwd에는 본인의 MySql 비밀번호. default는 1234
 
 # mysql workbench에서 지정한 db 정보
     mydb = mysql.connector.connect(
         host = "localhost",
-        user = "root",
+        user = "tedbear",
         port = port, ## 사용자가 지정한 port number (default : 3306)
         password = str(pwd), # 사용자가 지정한 password
         database = "tedbear", # db
@@ -24,7 +24,7 @@ def insert_user(val,port=3306,pwd=1234):
     
     mycursor = mydb.cursor()
     ## user insert ## 
-    sql = "INSERT INTO user (id, email,name,pwd) VALUES (%s, %s, %s, %s)" 
+    sql = "INSERT INTO user ( email,name,pwd) VALUES ( %s, %s, %s)" 
     mycursor.executemany(sql, val)
     mydb.commit()
     mycursor.close()
