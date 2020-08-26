@@ -5,7 +5,7 @@
 
 
 import sys
-import numpy
+import numpy as np
 
 def editDistance(r, h):
     '''
@@ -15,7 +15,7 @@ def editDistance(r, h):
         r -> the list of words produced by splitting reference sentence.
         h -> the list of words produced by splitting hypothesis sentence.
     '''
-    d = numpy.zeros((len(r)+1)*(len(h)+1), dtype=numpy.uint8).reshape((len(r)+1, len(h)+1))
+    d = np.zeros((len(r)+1)*(len(h)+1), dtype=np.uint8).reshape((len(r)+1, len(h)+1))
     for i in range(len(r)+1):
         d[i][0] = i
     for j in range(len(h)+1):

@@ -34,8 +34,8 @@ def insert_user(val,port=3306,pwd=1234):
 
 
 def init_talks(port=3306, pwd=1234):# talks 테이블을 초기 상태로 만드는 함수.
-    data= pd.read_csv('../ted_scrap/data/data_mokloc.csv',encoding='latin-1')
-    data2=pd.read_csv('../ted_scrap/data/ted_talks.csv',encoding='latin-1')
+    data= pd.read_csv('../tedscrap/data/youtube_list.csv',encoding='latin-1')
+    data2=pd.read_csv('../tedscrap/data/ted_talks.csv',encoding='latin-1')
     data2['yt_url']=None
     for i in range(len(data)):
         for j in range(len(data2)):
@@ -43,7 +43,7 @@ def init_talks(port=3306, pwd=1234):# talks 테이블을 초기 상태로 만드
                 data2['yt_url'][j]=data['ted_url'][i][32:43] # youtube url에서 video id만 저장
                 
     mydb = mysql.connector.connect(
-        host = "localhost",
+            host = "localhost",
         user = "tedbear",
         port = port, ## 사용자가 지정한 port number (default : 3306)
         password = str(pwd), # 사용자가 지정한 password
@@ -51,7 +51,7 @@ def init_talks(port=3306, pwd=1234):# talks 테이블을 초기 상태로 만드
         auth_plugin='mysql_native_password')
     
     mycursor = mydb.cursor()
-    sql='Delete from talks'  # 초기화
+    sql='truncate talks'  # 초기화
     mycursor.execute(sql)
     mydb.commit()
     val1 = data2[['talk_id','url','yt_url','title','speaker_1','published_date','duration',
@@ -93,7 +93,7 @@ def insert_talks(val,port=3306,pwd=1234): # talks에 insert하는 함수. NULL�
 
 
 def init_related_talks(port=3306,pwd=1234): # related_talks를 초기 상태로 만드는 함수
-    data = pd.read_csv('../ted_scrap/data/ted_talks.csv')
+    data = pd.read_csv('../tedscrap/data/ted_talks.csv')
     data = pd.DataFrame(data)
     data = data.where(pd.notnull(data), None)
     a=list()
@@ -121,7 +121,7 @@ def init_related_talks(port=3306,pwd=1234): # related_talks를 초기 상태로 
         database = "tedbear",
         auth_plugin='mysql_native_password')
     mycursor = mydb.cursor()
-    sql='Delete from related_talks'  # 초기화
+    sql='truncate related_talks'  # 초기화
     mycursor.execute(sql)
     mydb.commit()
     cols = "`,`".join([str(i) for i in related.columns.tolist()])
@@ -157,9 +157,10 @@ def insert_related_talks(val,port=3306,pwd=1234): # related_talks에 insert하�
 
 
 def init_sentence(port=3306,pwd=1234): # sentence table을 초기화 하는 함수입니다.
-    data = pd.read_csv('../ted_scrap/data/sentence_chunk_split.csv',encoding='latin-1')
+    data = pd.read_csv('../tedscrap/data/sentence_chunk_split.csv',encoding='latin-1')
     data = data.where(pd.notnull(data), None)
-
+    data['sentence_en']=data['sentence_en'].str.replace(r"\(.*\)","")
+    data = data[data.sentence_en != ' ']
     data.rename(columns = {"start": "start_time",
 
      "end": "end_time"}, inplace = True)
@@ -173,7 +174,7 @@ def init_sentence(port=3306,pwd=1234): # sentence table을 초기화 하는 함�
         auth_plugin='mysql_native_password')
 
     mycursor = mydb.cursor()
-    sql='Delete from sentence'  # 초기화
+    sql='truncate sentence'  # 초기화
     mycursor.execute(sql)
     mydb.commit()
     cols = "`,`".join([str(i) for i in data.columns.tolist()])
