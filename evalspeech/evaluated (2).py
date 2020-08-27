@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[223]:
+# In[29]:
 
 
 import numpy as np
@@ -29,9 +29,10 @@ from scipy.io import wavfile
 import warnings
 warnings.filterwarnings("ignore")
 import copy
+import sys
 
 
-# In[224]:
+# In[30]:
 
 
 import speech_recognition as sr9
@@ -40,6 +41,7 @@ import nltk
 #nltk.download('punkt')  # 처음한번 필요
 from nltk.tokenize import word_tokenize
 
+# sst 와 비교하여 error 구하는 과정
 def get_word_error_rate(r, h):
     d = np.zeros((len(r) + 1) * (len(h) + 1), dtype=np.uint16)
     d = d.reshape((len(r) + 1, len(h) + 1))
@@ -63,10 +65,9 @@ def get_word_error_rate(r, h):
     return 100-result
 
 
-# In[225]:
+# In[31]:
 
 
-import sys
 def editDistance(r, h):
     d = np.zeros((len(r)+1)*(len(h)+1), dtype=np.uint8).reshape((len(r)+1, len(h)+1))
     for i in range(len(r)+1):
@@ -232,7 +233,7 @@ def wer(r, h):
     return  result
 
 
-# In[226]:
+# In[32]:
 
 
 def preprocess(ted_audio_path,user_audio_path,png_save_path):
@@ -304,7 +305,7 @@ def preprocess(ted_audio_path,user_audio_path,png_save_path):
     return first_local_maximum_ted, first_local_maximum_you,df,df1
 
 
-# In[227]:
+# In[33]:
 
 
 def eval_speed(first_local_maximum_ted, first_local_maximum_you,df,df1):
@@ -315,7 +316,7 @@ def eval_speed(first_local_maximum_ted, first_local_maximum_you,df,df1):
         add=[0 for z in range(diff)]
         blue_ted_added=add+blue_ted                 
         df_ted_added=pd.DataFrame(blue_ted_added)
-    # 점수 짧은걸써야함 first1부터 df1[0]       ############# 이거는 점수구하는 과정###########
+    # 점수 짧은걸써야함 first1부터 df1[0]       #############  점수구하는 과정###########
         if len(df_ted_added[0])>len(df1[0]):
             index_diff=abs((len(df_ted_added[0])-(len(df1[0]))))   
             time_diff=index_diff/16000
@@ -336,7 +337,7 @@ def eval_speed(first_local_maximum_ted, first_local_maximum_you,df,df1):
         add=[0 for z in range(diff)]
         orange_you_added=add+orange_you # 내가짧은이까 더해줘서 orange1이생김
         df_you_added=pd.DataFrame(orange_you_added)
-        # 테드가 첨부분은 ㄴ더 나중에나옴 
+        # 테드가 첨부분은 더 나중에나옴  ,time_diff= 테드와 user의 시간 차이
         if len(df_you_added[0])>len(df[0]):    
             index_diff=abs((len(df_you_added[0])-(len(df[0]))))
             time_diff=index_diff/16000
@@ -347,6 +348,7 @@ def eval_speed(first_local_maximum_ted, first_local_maximum_you,df,df1):
             time_diff=index_diff/16000
             time_diff_per=index_diff/(len(df[0])-first_local_maximum_ted)
             time_result=round((1-time_diff_per)*100,1)
+    # speed_result= 3단계로 표시한 결과, time_result= user시간/ ted시간 %로표시
     global speed_result
     if time_diff < 1:
         speed_result='Excellent'
@@ -361,7 +363,7 @@ def eval_speed(first_local_maximum_ted, first_local_maximum_you,df,df1):
     
 
 
-# In[228]:
+# In[34]:
 
 
 def eval_strength(first_local_maximum_ted, first_local_maximum_you,df,df1):
@@ -371,18 +373,20 @@ def eval_strength(first_local_maximum_ted, first_local_maximum_you,df,df1):
         blue_ted=list(df[0])  # blue가 테드
         orange_you=list(df1[0])# orange가 나
         add=[0 for z in range(diff)]
-        blue_ted_added=add+blue_ted                 #  더해줘서 blue1생김
+        blue_ted_added=add+blue_ted                 #  시작부분 맞춰주기위해 [0,0,0,0,] 벡터 더해줌
         df_ted_added=pd.DataFrame(blue_ted_added)
         plt.figure(figsize=(20,5))
-        # 점수 짧은걸써야함 first1부터 df1[0]       ############# 이거는 점수구하는 과정###########
+        #       #############  점수구하는 과정###########
         if len(df_ted_added[0])>len(df1[0]):
             area =[]
             for z in range(first_local_maximum_you,len(df1[0]),1):
-                area.append(df_ted_added[0][z])        
+                area.append(df_ted_added[0][z])
+            # points = 두 파형의 넓이 비교를 통한 점수계산 
             points=1-(sum(abs(df1[0][first_local_maximum_you:len(df1[0])]-df_ted_added[0][first_local_maximum_you:len(df1[0])]))/sum(area))
-            
+            # points = 코사인 유사도
             points3=cos_sim(df_ted_added[0] [first_local_maximum_you:len(df1[0])],df1[0][first_local_maximum_you:len(df1[0])])
             
+            # 각 파형에서의 max값 대비 극점 값의 비율을 통해 계산 a,b,c .... 
             ranks =[]
             for i in range(1,len(df1[0])-1,1):
                 if df1[0][i]>0.15:
@@ -400,10 +404,7 @@ def eval_strength(first_local_maximum_ted, first_local_maximum_you,df,df1):
             else:
                 for i in range(len(ranks)):
                     diffrent.append(abs(ranks1[i]-ranks[i]))
-            points4=1-(sum(diffrent)/sum(ranks1))
-            
-            
-            
+            points4=1-(sum(diffrent)/sum(ranks1))        
         else:
             area =[]
             for z in range(first_local_maximum_you,len(df_ted_added[0]),1):
@@ -433,15 +434,7 @@ def eval_strength(first_local_maximum_ted, first_local_maximum_you,df,df1):
             ##############################
         orange_graph = gaussian_filter1d(df1[0], sigma=2)      # 이거도 뾰족부분 깍는과정인데 왜 두번들어가더라#
         blue_graph=df_ted_added[0]
-        #line1,=plt.plot(orange_graph,color='orange',linewidth=5)
-        #line2,=plt.plot(blue_graph,color='blue',linewidth=5)
-        #plt.title('Strength Result',fontsize=50)
-        #plt.legend(handles=(line1,line2),labels=('You','Ted'),fontsize=20)
-        #plt.ylabel('Strength',fontsize=20)
-        #plt.tick_params(axis='x', which='both',bottom=False,top=False,labelbottom=False)
-        #plt.show()
-        #plt.savefig(png_save_path+'strength_result.png')
-    #테듣가 더길떄               ######## 방금 위에한거의 반대과정 A보다 B가 늦게시작할경우######
+    #테드 보다 user목소리가 더 빨리 시작할때 (반대과정)   위랑 
     elif first_local_maximum_you<=first_local_maximum_ted:
         diff=first_local_maximum_ted-first_local_maximum_you
         blue_ted=list(df[0])
@@ -449,7 +442,6 @@ def eval_strength(first_local_maximum_ted, first_local_maximum_you,df,df1):
         add=[0 for z in range(diff)]
         orange_you_added=add+orange_you # 내가짧은이까 더해줘서 orange1이생김
         df_you_added=pd.DataFrame(orange_you_added)
-        plt.figure(figsize=(20,5));
         # 테드가 첨부분은 ㄴ더 나중에나옴 
         if len(df_you_added[0])>len(df[0]):
             area =[]
@@ -528,6 +520,7 @@ def eval_strength(first_local_maximum_ted, first_local_maximum_you,df,df1):
         strength_result='Good'
     else:
         strength_result='Bad'
+    plt.figure(figsize=(20,5));
     line1,=plt.plot(blue_graph,color='blue',linewidth=5)  
     line2,=plt.plot(orange_graph,color='orange',linewidth=5)
     plt.title('Strength Result',fontsize=50)
@@ -538,28 +531,29 @@ def eval_strength(first_local_maximum_ted, first_local_maximum_you,df,df1):
     return strength_result_rate,strength_result
 
 
-# In[229]:
+# In[35]:
 
 
+# 음 높이 체크해주는 과정
 def eval_pitch(ted_audio_path,user_audio_path,png_save_path):
-    sr, x = wavfile.read(ted_audio_path)
+    sr, x = wavfile.read(ted_audio_path)                     # ted 목소리
     assert sr == 16000
     x = x.astype(np.float64)
     frame_length = 1024
     hop_length = 80
     f_you = pysptk.swipe(x.astype(np.float64), fs=sr, hopsize=hop_length, min=60, max=240, otype="f0")
-
     sr1, x1 = wavfile.read(user_audio_path)
     assert sr1 == 16000
     x1 = x1.astype(np.float64)
     frame_length = 1024
     hop_length = 80
 
-    # F0 estimation
+    # F0 estimation  # 각 주파수에서 기본 주파수 뽑기 ,def strength 와 같은 과정.
+    
     f_ted= pysptk.swipe(x1.astype(np.float64), fs=sr1, hopsize=hop_length, min=60, max=240, otype="f0")
     plt.figure(figsize=(20,5))
     ##############
-    width=int(len(f_ted)/22)
+    width=int(len(f_ted)/22)   # width 조정 해주기
     width1=int(len(f_you)/22)
     if np.where(f_you>=60)[0][0] > np.where(f_ted>=60)[0][0]: #테드가 왼쪽에서 더 빠르게 시작하면?
         diff=np.where(f_you>=60)[0][0]-np.where(f_ted>=60)[0][0]
@@ -803,9 +797,10 @@ def eval_pitch(ted_audio_path,user_audio_path,png_save_path):
     return pitch_result_rate, pitch_result
 
 
-# In[230]:
+# In[36]:
 
 
+# 구글 stt와 문장 비교.
 def eval_pronounciation(ted_audio_path,user_audio_path):
     r = sr9.Recognizer()
     with sr9.AudioFile(ted_audio_path) as source:
@@ -832,9 +827,10 @@ def eval_pronounciation(ted_audio_path,user_audio_path):
     return ted_answer, your_answer,result,pronounciation_result
 
 
-# In[231]:
+# In[37]:
 
 
+# 4개 평가항목 excelleent 3점 good 2점 bad1점 으로 총 평가점수
 def eval_total(speed_result,strength_result,pitch_result,pronounciation_result):
     result_list=[speed_result,strength_result,pitch_result,pronounciation_result]
     score=0
@@ -845,11 +841,11 @@ def eval_total(speed_result,strength_result,pitch_result,pronounciation_result):
             score+=2
         else:
             score+=1
-    if score >=11:
+    if score >=11:                     # 총점 11점 이상
         total_result='Excellent'
-    elif score>=6:
+    elif score>=7:                     # 총점 7점 이상
         total_result='Good'
-    else:
+    else:                              # 그 외
         total_result='Bad'
     return total_result
             
@@ -857,12 +853,19 @@ def eval_total(speed_result,strength_result,pitch_result,pronounciation_result):
     
 
 
-# In[232]:
+# In[38]:
 
 
+# 전체 함수 하나의 함수로 묶기
 def eval(ted_audio_path,user_audio_path,png_save_path):
     first_local_maximum_you,first_local_maximum_ted,df,df1 = preprocess(ted_audio_path,user_audio_path,png_save_path)
     return eval_speed(first_local_maximum_ted, first_local_maximum_you,df,df1),eval_strength(first_local_maximum_ted, first_local_maximum_you,df,df1),eval_pitch(ted_audio_path,user_audio_path,png_save_path),eval_pronounciation(ted_audio_path,user_audio_path),eval_total(speed_result,strength_result,pitch_result,pronounciation_result)
+
+
+
+# In[ ]:
+
+
 
 
 
