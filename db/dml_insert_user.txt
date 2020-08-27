@@ -1,0 +1,8 @@
+
+INSERT INTO `tedbear`.`user` (`email`,`name`,`pwd`) VALUES('oommff3@naver.com','강민석','96cae35ce8a9b0244178bf28e4966c2ce1b8385723a96a6b838858cdd6ca0a1e');
+
+INSERT INTO `tedbear`.`user` (`email`,`name`,`pwd`) VALUES('todtjs92@naver.com','김정의','96cae35ce8a9b0244178bf28e4966c2ce1b8385723a96a6b838858cdd6ca0a1e');
+
+INSERT INTO `tedbear`.`user` (`email`,`name`,`pwd`) VALUES('youk2222@naver.com','육현섭','96cae35ce8a9b0244178bf28e4966c2ce1b8385723a96a6b838858cdd6ca0a1e');
+
+INSERT INTO `tedbear`.`user` (`email`,`name`,`pwd`) VALUES('ran3jo@gmail.com','조란','96cae35ce8a9b0244178bf28e4966c2ce1b8385723a96a6b838858cdd6ca0a1e');
