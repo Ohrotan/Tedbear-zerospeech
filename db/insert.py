@@ -142,7 +142,7 @@ def insert_related_talks(val,port=3306,pwd=1234): # related_talks에 insert하�
     # mysql workbench에서 지정한 db 정보
     mydb = mysql.connector.connect(
         host = "localhost",
-        user = "root",
+        user = "tedbear",
         port = port, ## 사용자가 지정한 port number (default : 3306)
         password = str(pwd), # 사용자가 지정한 password
         database = "tedbear", # db

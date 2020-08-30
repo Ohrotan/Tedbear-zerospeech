@@ -93,7 +93,6 @@ CREATE TABLE IF NOT EXISTS `tedbear`.`sentence` (
   `end_time` float NULL,
   `duration` float NULL,
   `audio` varchar(45) NULL,
-  `sentence_kr` TEXT NULL,
   `sentence_en` TEXT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB DEFAULT CHARSET=utf8mb4;
