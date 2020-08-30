@@ -187,6 +187,7 @@ def wer(r, h):
     list = getStepList(r, h, d)
 
     # print the result in aligned way
+   
     result = float(d[len(r)][len(h)]) / len(r) * 100
     result=round(100-result,2)
     result_str = str("%.2f" % result) + "%"
